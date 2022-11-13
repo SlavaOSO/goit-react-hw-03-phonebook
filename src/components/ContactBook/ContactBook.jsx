@@ -15,12 +15,22 @@ state = {
     filter: ''
     }
     
-   
+    componentDidMount() {
+        if (JSON.parse(localStorage.getItem('contacts'))) {
+            this.setState({ contacts: JSON.parse(localStorage.getItem('contacts'))})
+        }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (this.state.contacts !== prevState.contacts) {
+            localStorage.setItem('contacts', JSON.stringify(this.state.contacts))
+        }
+    }
 
     getValueInput = (e) => {
         const target = e.target;
         const value = target.type === 'text' || target.type === 'tel' ?  target.value: " ";
-        const elem = target.name; // целевой елемент(ы) 
+        const elem = target.name;
         console.log(elem);
         this.setState({
             [elem]: value
@@ -43,26 +53,26 @@ state = {
             || contact.number.toLowerCase().includes(normalizeFilter));
     }
 
-    deleteContact = (id) => { // удаление контакта
+    deleteContact = (id) => {
         
-        const { contacts } = this.state;// деструктуризация
-        contacts.splice(id, 1);// удаляем 
+        const { contacts } = this.state;
+        contacts.splice(id, 1);
         this.setState({
-            contacts, // возвращаем обновленный стейт с удаленным обьектом
+            contacts,
         });
-        console.log(this.state.contacts) //тесты
+        console.log(this.state.contacts)
         Notify.success('The contact has been successfully deleted.');
-        
+        localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
     };
    
     chekingContacts = (e) => {
         const { contacts, name, } = this.state;
         const chek = contacts.find((contact) =>contact.name === name);
 
-            if (chek) { // если есть уже
+            if (chek) {
                 Report.failure('Error', 'This name is already in your contact list, enter another name, and try again.', 'OK');
             }         
-            else { // если нет
+            else {
                 this.setState({ contacts: this.state.contacts.concat({ id: nanoid(), name: this.state.name, number: this.state.number }) });
                 return Notify.success('Contact has been successfully added.');
             }
